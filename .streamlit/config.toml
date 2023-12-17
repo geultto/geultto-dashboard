@@ -1,0 +1,11 @@
+[theme]
+base="light"
+primaryColor="#1E3D6B" 
+backgroundColor="#F6F8F8"
+secondaryBackgroundColor="#979EA9" 
+textColor="#212529"
+font="sans serif"
+
+[global]
+disableWidgetStateDuplicationWarning = true
+

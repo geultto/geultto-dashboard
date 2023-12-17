@@ -1,0 +1,6 @@
+streamlit
+pandas
+st-gsheets-connection
+google-cloud-bigquery
+streamlit-extras
+altair

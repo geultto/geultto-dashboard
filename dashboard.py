@@ -26,7 +26,7 @@ st.markdown(
 
 #날짜 필터링
 start_date = st.sidebar.date_input("시작일", value=datetime(2021, 11, 19))
-end_date = st.sidebar.date_input("끝", value=date.today())
+end_date = st.sidebar.date_input("종료일", value=date.today())
 
 #채널 필터링
 ch_list = pd.DataFrame(helper.run_bigquery_query('channels.sql', st.secrets["gcp_service_account"]))
@@ -67,8 +67,8 @@ num_threads = pd.DataFrame(helper.run_bigquery_query('num_thread.sql', st.secret
 total_emojis = pd.DataFrame(helper.run_bigquery_query('total_emojis.sql', st.secrets["gcp_service_account"]))
 
 col1.metric("총 채널 수", len(ch_list)) 
-col2.metric("총 post 수", num_posts['cnt'].sum()) 
-col3.metric("총 thread 수", num_threads['cnt'].sum())
+col2.metric("총 게시글 수", num_posts['cnt'].sum()) 
+col3.metric("총 댓글 수", num_threads['cnt'].sum())
 col4.metric("총 이모지 수", total_emojis['total_emoji_count'][0])
 
 st.divider()
@@ -157,8 +157,8 @@ col1.altair_chart(pass_chart, use_container_width=True)
 
 
 
-
+# future work
 # 필터링 너무 느림.. 채널들 그룹화하기? (or 채널 필터링 필요 없을 수도)
-# 보여줄 지표 고민
+# 보여줄 지표 고민할 것
 # 필터링 파트 helper.py 파일에 모듈화
-# 로그인 기능 추가
+# 로그인 기능 추가 (private 하게만 공개하면 로그인 기능 필요없을수도?)

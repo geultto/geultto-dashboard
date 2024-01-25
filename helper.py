@@ -5,13 +5,18 @@ from streamlit_gsheets import GSheetsConnection
 import streamlit as st
 
 # SQL 파일 로드
+
+
 def load_sql(filename):
     with open(filename, 'r') as file:
         return file.read()
 
 # BigQuery 연결 및 쿼리 실행
+
+
 def run_bigquery_query(sql_file, credentials_info):
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+    credentials = service_account.Credentials.from_service_account_info(
+        credentials_info)
     client = bigquery.Client(credentials=credentials)
     query = load_sql(f'queries/{sql_file}')
     query_job = client.query(query)
@@ -19,10 +24,14 @@ def run_bigquery_query(sql_file, credentials_info):
     return [dict(row) for row in rows_raw]
 
 # Google Sheets 연결
+
+
 def connect_to_gsheet(connection_name):
     return st.connection(connection_name, type=GSheetsConnection)
 
 # 날짜, 채널 필터링 함수
+
+
 def filtering(dataframe, start_date=None, end_date=None, channels=None):
     if start_date is None or end_date is None or channels is None:
         raise ValueError("start date, end date, channels 확인필요")

@@ -2,3 +2,4 @@
 __pycache__
 private/
 .DS_Store
+.venv/

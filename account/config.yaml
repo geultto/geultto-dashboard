@@ -1,0 +1,13 @@
+cookie:
+  expiry_days: 0
+  key: cookie_key_test
+  name: cookie_name_test
+credentials:
+  usernames:
+    gt_dash_admin:
+      email: ycseong07@gmail.com
+      name: admin
+      password: $2b$12$gtw.AHnC4jC1/gJgtlch1.MG8NmRZan7Euz2xEMHSpafTokMH.K.2
+preauthorized:
+  emails:
+  - admin@gmail.com

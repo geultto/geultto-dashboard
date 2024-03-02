@@ -3,3 +3,5 @@ __pycache__
 private/
 .DS_Store
 .venv/
+account/create_accout.py
+account/credentials.xlsx

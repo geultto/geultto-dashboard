@@ -5,27 +5,19 @@ import helper
 from datetime import timedelta, datetime, date
 from streamlit_extras.metric_cards import style_metric_cards
 
-st.set_page_config(page_title="글또 운영대시보드",
-                   layout="wide",
-                   initial_sidebar_state="expanded"
-                   )
+def display_dashboard(name):
 
-style_metric_cards(border_left_color="#1E3D6B")
+    style_metric_cards(border_left_color="#1E3D6B")
 
-############## Side bar start ##############
+    ############## Side bar start ##############
 
-start_date = st.sidebar.date_input("시작일", value=datetime(2023, 11, 19))
-end_date = st.sidebar.date_input("종료일", value=date.today())
+    start_date = st.sidebar.date_input("시작일", value=datetime(2023, 11, 19))
+    end_date = st.sidebar.date_input("종료일", value=date.today())
 
-st.sidebar.text_input("암호", value="")
-login_button = st.sidebar.button(label='login') # 로그인 대신 임시로 사용
+    ############## Side bar End ##############
 
-############## Side bar End ##############
-
-if login_button:
-
-############## 데이터 로드##############
-    
+    ############## 데이터 로드##############
+        
     # 포스트 수, 스레드 수, 이모지 수
     num_posts = pd.DataFrame(helper.run_bigquery_query(
         'num_post.sql', st.secrets["gcp_service_account"]))
@@ -303,8 +295,7 @@ if login_button:
         height=360,  title='채널 활성화 추이'
     ).interactive(bind_y=False)
 
-    with col1:
-        active_channel_chart
+    col1.altair_chart(active_channel_chart, theme="streamlit", use_container_width=True)
 
     ## 3-2. 대숲 추이
 
@@ -388,3 +379,6 @@ if login_button:
 
     top_ch_chart = alt.vconcat(chart_top10, data=top_10_channels, title="")
     col3.altair_chart(top_ch_chart, theme="streamlit", use_container_width=True)
+
+if __name__ == '__main__':
+    display_dashboard()

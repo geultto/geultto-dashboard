@@ -23,15 +23,14 @@ def run_bigquery_query(sql_file, credentials_info):
 def connect_to_gsheet(connection_name):
     return st.connection(connection_name, type=GSheetsConnection)
 
-# 날짜, 채널 필터링 함수
-def filtering(dataframe, start_date=None, end_date=None, channels=None):
-    if start_date is None or end_date is None or channels is None:
-        raise ValueError("start date, end date, channels 확인필요")
+# 날짜 필터링 함수
+def filtering(dataframe, start_date=None, end_date=None):
+    if start_date is None or end_date is None:
+        raise ValueError("start date, end date 확인필요")
 
     dataframe['date'] = pd.to_datetime(dataframe['date']).dt.date
     filtered_df = dataframe[
         (dataframe['date'] >= start_date) &
-        (dataframe['date'] <= end_date) &
-        (dataframe['channel_name'].isin(channels))
+        (dataframe['date'] <= end_date)
     ]
     return filtered_df

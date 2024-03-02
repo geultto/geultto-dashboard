@@ -80,7 +80,7 @@ def display_dashboard(name):
 
     # 다음 due date
     current_date = pd.Timestamp.today().date()
-    next_due_date_row = aggregated_df[aggregated_df['due_date'] > current_date].head(1)
+    next_due_date_row = aggregated_df[aggregated_df['due_date'] >= current_date].head(1)
 
     ############## 데이터 로드끝 ##############
 

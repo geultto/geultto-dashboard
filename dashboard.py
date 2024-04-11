@@ -32,17 +32,17 @@ def display_dashboard(name):
     deposit_df = deposit_sheet_conn.read(
         worksheet="현황",
         ttl="10m",
-        usecols=list(range(6, 16)),
+        usecols=list(range(7, 16)),
     )
+
     submit_counts = deposit_df.apply(lambda col: (col == 0).sum())
     not_submit_counts = deposit_df.apply(lambda col: (col == -10000).sum())
     pass_counts = deposit_df.apply(lambda col: (col == 'pass').sum())
-    summary_df = pd.DataFrame(
-        {'제출': submit_counts, '미제출': not_submit_counts, '패스': pass_counts})
-    summary_df.index = summary_df.index.to_series().apply(
-        lambda x: x.replace('오후', 'PM'))
-    summary_df.index = pd.to_datetime(
-        summary_df.index, format='%Y. %m. %d %p %H:%M:%S').date
+
+    summary_df = pd.DataFrame({'제출': submit_counts, '미제출': not_submit_counts, '패스': pass_counts})
+    summary_df.index = summary_df.index.to_series().apply(lambda x: x.replace('오후', 'PM'))
+
+    summary_df.index = pd.to_datetime(summary_df.index, format='%Y. %m. %d %p %H:%M:%S').date
 
     # 유저활성도
     active_user_df = pd.DataFrame(helper.run_bigquery_query('active_users.sql', st.secrets["gcp_service_account"]))
@@ -65,7 +65,9 @@ def display_dashboard(name):
         datetime(2024, 3, 3).date(),  # 7회차
         datetime(2024, 3, 17).date(),  # 8회차
         datetime(2024, 3, 31).date(),  # 9회차
-        datetime(2024, 4, 14).date(),  # 10회차 - 종료일
+        datetime(2024, 4, 14).date(),  # 10회차
+        datetime(2024, 4, 21).date(),  # 11회차
+        datetime(2024, 4, 28).date(),  # 12회차 - 종료일
     ]
 
     # 각 회차 마감일의 13일 전부터 마감일까지 제출한 글 수 
@@ -83,7 +85,8 @@ def display_dashboard(name):
     next_due_date_row = aggregated_df[aggregated_df['due_date'] >= current_date].head(1)
 
     ############## 데이터 로드끝 ##############
-
+    st.dataframe(active_user_df)
+    st.dataframe(active_channel_df)
     # 1. 어제의 글또 활성화 정도
     col1, col2, col3= st.columns(3)
 
@@ -379,6 +382,10 @@ def display_dashboard(name):
 
     top_ch_chart = alt.vconcat(chart_top10, data=top_10_channels, title="")
     col3.altair_chart(top_ch_chart, theme="streamlit", use_container_width=True)
+
+    ## 비활성 유저
+    ## 2주 연속 글 제출 x or 14일 동안 댓글, 포스트하지 않은 유저
+
 
 if __name__ == '__main__':
     display_dashboard()

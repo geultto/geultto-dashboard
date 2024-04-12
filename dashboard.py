@@ -85,8 +85,6 @@ def display_dashboard(name):
     next_due_date_row = aggregated_df[aggregated_df['due_date'] >= current_date].head(1)
 
     ############## 데이터 로드끝 ##############
-    st.dataframe(active_user_df)
-    st.dataframe(active_channel_df)
     # 1. 어제의 글또 활성화 정도
     col1, col2, col3= st.columns(3)
 
@@ -385,6 +383,9 @@ def display_dashboard(name):
 
     ## 비활성 유저
     ## 2주 연속 글 제출 x or 14일 동안 댓글, 포스트하지 않은 유저
+    churned_df = pd.DataFrame(helper.run_bigquery_query(
+        'churned_user.sql', st.secrets["gcp_service_account"]))    
+    st.dataframe(churned_df)
 
 
 if __name__ == '__main__':

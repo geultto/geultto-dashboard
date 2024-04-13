@@ -32,7 +32,7 @@ def display_dashboard(name):
     deposit_df = deposit_sheet_conn.read(
         worksheet="현황",
         ttl="10m",
-        usecols=list(range(8, 16)),
+        usecols=list(range(8, 17)), #현재 수동으로 바꾸는 중
     )
 
     submit_counts = deposit_df.apply(lambda col: (col == 0).sum())
@@ -326,7 +326,7 @@ def display_dashboard(name):
         height=300
     ).interactive(bind_y=False)
 
-    # 3-3. 커피챗 추이
+    ## 3-3. 커피챗 추이
     aggregated_data = num_posts[num_posts.channel_name == '1_커피챗_모임_후기']
 
     coffee_chart = alt.Chart(
@@ -381,11 +381,37 @@ def display_dashboard(name):
     top_ch_chart = alt.vconcat(chart_top10, data=top_10_channels, title="")
     col3.altair_chart(top_ch_chart, theme="streamlit", use_container_width=True)
 
-    ## 비활성 유저
-    ## 2주 연속 글 제출 x or 14일 동안 댓글, 포스트하지 않은 유저
-    churned_df = pd.DataFrame(helper.run_bigquery_query(
-        'churned_user.sql', st.secrets["gcp_service_account"]))    
-    st.dataframe(churned_df)
+    # 4. 이탈 유저 관련 지표
+    # 비활성 유저 정의: 2주 연속 글 제출 x or 14일 동안 댓글, 포스트하지 않은 유저
+    col1, col2, col3 = st.columns(1,2,2)
+
+    ## 4-1. 비활성 유저 주별 그래프 num_churnd_users, logged_date
+    churned_df_num = pd.DataFrame(helper.run_bigquery_query(
+        'churned_users_num.sql', st.secrets["gcp_service_account"]))    
+
+    chart_churned = ( 
+        alt.Chart()
+        .mark_bar(width = 10, color='green')
+        .encode(
+            x=alt.X("logged_date:T", title=""),
+            y=alt.Y("num_churned_users:Q", title="")
+        )
+        .properties(height=280, title='이탈 유저 수')
+    )
+
+    churn_chart = alt.vconcat(chart_churned, data=churned_df_num, title="")
+    col1.altair_chart(churn_chart, theme="streamlit", use_container_width=True)
+
+    ## 4-2. 오늘 기준 비활성 유저  리스트
+
+
+    ## 비활성 유저 주별 그래프
+    ## 막대그래프로 각 주차 별 비활성유저 보여주기 (or 조건으로 가장 마지막 )
+    
+
+    ## 비활성 유저 리스트
+
+    ## 리텐션 테이블
 
 
 if __name__ == '__main__':

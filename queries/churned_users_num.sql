@@ -1,0 +1,1 @@
+SELECT * FROM `geultto.geultto_9th.churned_users`

@@ -4,6 +4,7 @@ import altair as alt
 import helper
 from datetime import timedelta, datetime, date
 from streamlit_extras.metric_cards import style_metric_cards
+from st_aggrid import AgGrid
 
 def display_dashboard(name):
 
@@ -84,6 +85,15 @@ def display_dashboard(name):
     # 다음 due date
     current_date = pd.Timestamp.today().date()
     next_due_date_row = aggregated_df[aggregated_df['due_date'] >= current_date].head(1)
+
+    # 이탈 유저
+    churned_df_num = pd.DataFrame(helper.run_bigquery_query(
+    'churned_users_num.sql', st.secrets["gcp_service_account"]))    
+    
+    churned_df = pd.DataFrame(helper.run_bigquery_query(
+        'churned_users.sql', st.secrets["gcp_service_account"]))
+    
+    churned_df['last_activity_date'] = pd.to_datetime(churned_df['last_activity_date']).dt.strftime('%Y-%m-%d')
 
     ############## 데이터 로드끝 ##############
     # 1. 어제의 글또 활성화 정도
@@ -383,12 +393,9 @@ def display_dashboard(name):
 
     # 4. 이탈 유저 관련 지표
     # 비활성 유저 정의: 2주 연속 글 제출 x or 14일 동안 댓글, 포스트하지 않은 유저
-    col1, col2, col3 = st.columns(1,2,2)
+    col1, col2, col3 = st.columns([1, 0.2, 2])
 
-    ## 4-1. 비활성 유저 주별 그래프 num_churnd_users, logged_date
-    churned_df_num = pd.DataFrame(helper.run_bigquery_query(
-        'churned_users_num.sql', st.secrets["gcp_service_account"]))    
-
+    ## 4-1. 비활성 유저 주별 그래프
     chart_churned = ( 
         alt.Chart()
         .mark_bar(width = 10, color='green')
@@ -403,13 +410,49 @@ def display_dashboard(name):
     col1.altair_chart(churn_chart, theme="streamlit", use_container_width=True)
 
     ## 4-2. 오늘 기준 비활성 유저  리스트
-
-
-    ## 비활성 유저 주별 그래프
-    ## 막대그래프로 각 주차 별 비활성유저 보여주기 (or 조건으로 가장 마지막 )
     
-
-    ## 비활성 유저 리스트
+    grid_options = {
+        "columnDefs": [
+            {
+                "headerName": "id",
+                "field": "userid",
+                "width": 150
+            },
+            {
+                "headerName": "이름",
+                "field": "name", 
+                "width": 80
+            },
+            {
+                "headerName": "체널",
+                "field": "department_slack", 
+                "width": 130
+            },
+            {
+                "headerName": "이탈 분류",
+                "field": "type",
+                "width": 250
+            },
+            {
+                "headerName": "마지막 활동 날짜",
+                "field": "last_activity_date",
+                "width": 120
+            },
+        ],
+}
+    
+    with col3:
+        st.markdown("##### 오늘 기준 이탈유저 리스트")
+        AgGrid(churned_df, 
+            gridOptions = grid_options,
+            height = 305,
+            theme = 'alpine',
+            custom_css = { 
+                "#gridToolBar": {
+                    "padding-bottom": "0px !important"
+                    } 
+                }
+            )
 
     ## 리텐션 테이블
 

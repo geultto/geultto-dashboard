@@ -1,4 +1,4 @@
-altair==5.2.0
+altair==4.2.2
 attrs==23.2.0
 bcrypt==4.1.2
 beautifulsoup4==4.12.3
@@ -66,6 +66,7 @@ PyJWT==2.8.0
 pymdown-extensions==10.7
 pyparsing==3.1.1
 python-dateutil==2.8.2
+python-decouple==3.8
 pytz==2023.3.post1
 PyYAML==6.0.1
 referencing==0.32.1
@@ -82,6 +83,7 @@ sqlparse==0.4.4
 st-annotated-text==4.0.1
 st-gsheets-connection==0.0.3
 streamlit==1.30.0
+streamlit-aggrid==1.0.3.post2
 streamlit-authenticator==0.3.1
 streamlit-camera-input-live==0.2.0
 streamlit-card==1.0.0

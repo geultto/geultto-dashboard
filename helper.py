@@ -11,8 +11,9 @@ def load_sql(filename: str) -> str:
         return file.read()
 
 # BigQuery 연결 및 쿼리 실행
-def run_bigquery_query(sql_file: str, credentials_info: Dict[str, Any]) -> List[Dict[str, Any]]:
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+@st.cache_data(ttl=43200)  # 12시간 간격
+def run_bigquery_query(sql_file: str, _credentials_info: Dict[str, Any]) -> List[Dict[str, Any]]:
+    credentials = service_account.Credentials.from_service_account_info(_credentials_info)
     client = bigquery.Client(credentials=credentials)
     query = load_sql(f'queries/{sql_file}')
     query_job = client.query(query)

@@ -5,7 +5,7 @@ WITH DateRanges AS (
     DATE_SUB(date, INTERVAL 28 DAY) AS start_date_28,
     date AS submit_date
   FROM 
-    UNNEST(GENERATE_DATE_ARRAY('2023-11-26', '2024-05-12', INTERVAL 14 DAY)) AS date
+    UNNEST(GENERATE_DATE_ARRAY('2023-11-26', '2024-05-12', INTERVAL 1 DAY)) AS date
 ),
 PostThreadActiveUsers AS (
   -- 2주 동안 적어도 하나의 post 또는 thread를 작성한 사용자 수

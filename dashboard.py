@@ -19,11 +19,13 @@ def display_dashboard(name):
 
     ############## 데이터 로드##############
         
-    # 포스트 수, 스레드 수
+    # 포스트 수, 스레드 수, 이모지 수
     num_posts = pd.DataFrame(helper.run_bigquery_query(
         'num_post.sql', st.secrets["gcp_service_account"]))
     num_threads = pd.DataFrame(helper.run_bigquery_query(
         'num_thread.sql', st.secrets["gcp_service_account"]))
+    num_emojis = pd.DataFrame(helper.run_bigquery_query(
+        'num_emojis.sql', st.secrets["gcp_service_account"]))
 
     # 글 제출 집계 (from deposit DB)
     deposit_sheet_conn = helper.connect_to_gsheet("gsheets2")
@@ -86,13 +88,13 @@ def display_dashboard(name):
 
     # 리텐션 테이블을 위한 데이터프레임
     active_users_list_df = pd.DataFrame(helper.run_bigquery_query(
-    'active_users.sql', st.secrets["gcp_service_account"]))    
-    
+    'active_users.sql', st.secrets["gcp_service_account"]))
+
     churned_df = pd.DataFrame(helper.run_bigquery_query(
         'churned_users.sql', st.secrets["gcp_service_account"]))
 
-
     ############## 데이터 로드끝 ##############
+
     # 1. 어제의 글또 활성화 정도
     col1, col2, col3= st.columns(3)
 
@@ -112,9 +114,9 @@ def display_dashboard(name):
     # 2. 유저 활성 관련 지표 추세
     col1, col2 = st.columns(2)
 
-    ## 2-1. 포스트, 스레드 수, 유저 활성도, 글 제출 수  추이
+    ## 2-1. 활성 유저 수, 글 제출 수, 포스트 수, 댓글 수, 이모지 수  추이 차트
 
-    ### 유저 활성도 (포스트 + 댓글  + 제출 + 이모지)
+    ### 유저 활성도 (포스트 + 댓글  + 제출 + 이모지 종합)
 
     filtered_active_user_df = helper.filtering(
         dataframe=active_user_df,
@@ -145,8 +147,40 @@ def display_dashboard(name):
     ).properties(
         height=344
     ).interactive(bind_y=False)
+
+    ### 글 제출 수
+
+    filtered_submit_df= helper.filtering(
+        dataframe=submit_df,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    submit_chart = alt.Chart(
+        filtered_submit_df
+    ).mark_area( 
+        line={'color':'darkgreen'},
+        interpolate='basis',
+        color=alt.Gradient(
+            gradient='linear',
+            stops=[
+                alt.GradientStop(color='white', offset=0),
+                alt.GradientStop(color='darkgreen', offset=1)
+                ],
+            x1=1,
+            x2=1,
+            y1=1,
+            y2=0
+            )
+    ).encode(
+        x=alt.X('date:T', title=''),
+        y=alt.Y('submit:Q', title=''),
+        tooltip=['date:T', 'cnt:Q']
+    ).properties(
+        height=344
+    ).interactive(bind_y=False)
     
-    ###포스트
+    ### 포스트 수
     # <@U065Z7248P9> 님이 채널에 참여함 .. 등의 포스트는 제외 필요
     filtered_posts = helper.filtering(
         dataframe=num_posts,
@@ -180,7 +214,7 @@ def display_dashboard(name):
         height=344
     ).interactive(bind_y=False)
 
-    ### 스레드
+    ### 스레드 수
 
     filtered_threads = helper.filtering(
         dataframe=num_threads,
@@ -213,17 +247,19 @@ def display_dashboard(name):
     ).properties(
         height=344
     ).interactive(bind_y=False)
-    
-    ### 글 제출 수
 
-    filtered_submit_df= helper.filtering(
-        dataframe=submit_df,
+    ### 이모지 수 (이모지가 달린 포스트의 createtime으로 계산하기 때문에 정확한 정확한 날짜는 아님)
+
+    filtered_emojis = helper.filtering(
+        dataframe=num_emojis,
         start_date=start_date,
         end_date=end_date,
     )
+    aggregated_data = filtered_emojis.groupby(
+        'date')['cnt'].sum().reset_index()
 
-    submit_chart = alt.Chart(
-        filtered_submit_df
+    emoji_chart = alt.Chart(
+        aggregated_data
     ).mark_area( 
         line={'color':'darkgreen'},
         interpolate='basis',
@@ -240,18 +276,19 @@ def display_dashboard(name):
             )
     ).encode(
         x=alt.X('date:T', title=''),
-        y=alt.Y('submit:Q', title=''),
+        y=alt.Y('cnt:Q', title=''),
         tooltip=['date:T', 'cnt:Q']
     ).properties(
         height=344
     ).interactive(bind_y=False)
 
     with col1:
-        tab1, tab2, tab3, tab4 = st.tabs(["활성 유저 수", "댓글 수", "포스트 수", "글 제출 수"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["활성 유저 수", "글 제출 수", "포스트 수", "댓글 수", "이모지 수"])
         tab1.altair_chart(active_user_chart, use_container_width=True)
-        tab2.altair_chart(thread_chart, use_container_width=True)
+        tab2.altair_chart(submit_chart, use_container_width=True)
         tab3.altair_chart(post_chart, use_container_width=True)
-        tab4.altair_chart(submit_chart, use_container_width=True)
+        tab4.altair_chart(thread_chart, use_container_width=True)
+        tab5.altair_chart(emoji_chart, use_container_width=True)
 
     ## 2-2. 회차 별 제출, 미제출, 패스 수 추이
     submission_df = summary_df.reset_index().melt(
@@ -440,24 +477,25 @@ def display_dashboard(name):
             retention_matrix.at[weeks[i], weeks[j]] = ((prev_week & curr_week) == 1).sum() / prev_week.sum()
 
     retention_long = retention_matrix.reset_index().melt(id_vars='index', var_name='week', value_name='retention')
+    retention_long['retention'] = retention_long['retention'].round(3) * 100
 
     # 초록색 계열로 커스텀 컬러 매핑을 정의
-    color_scale = alt.Scale(domain=[0, 0.7, 1],
+    color_scale = alt.Scale(domain=[0, 70, 100],
                             range=["#F5FBEF", "#E6F8E0", "#21610B"])
 
 
     chart = alt.Chart(retention_long).mark_rect().encode(
-        x=alt.X('week:O', title='Week'),
-        y=alt.Y('index:O', title='Previous Week'),
+        x=alt.X('week:O', title='주차'),
+        y=alt.Y('index:O', title='주차'),
         color=alt.Color('retention:Q', scale=color_scale, legend=alt.Legend(title="리텐션 비율")),
-        tooltip=['index', 'week', 'retention']
+        tooltip=['week', 'retention']
     ).properties(
         width=400,
         height=400,
     )
 
     with col2:
-        st.markdown("##### 리텐션 테이블")
+        st.markdown("##### 리텐션 테이블 (단위: %)")
         st.altair_chart(chart, use_container_width=True)
 
 if __name__ == '__main__':

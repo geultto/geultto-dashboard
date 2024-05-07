@@ -462,8 +462,9 @@ def display_dashboard(name):
 #                     } 
 #                 }
 #             )
-        
-    col1.dataframe(churned_df, width = 600)
+
+    col1.markdown("##### 지난 주 이탈 유저 리스트")
+    col1.dataframe(churned_df, width = 600, height= 350)
 
     ## 4-2. 리텐션 테이블
     weeks = active_users_list_df['active_week'].unique().tolist()

@@ -8,7 +8,7 @@ from st_aggrid import AgGrid
 
 def display_dashboard(name):
 
-    style_metric_cards(border_left_color="#1E3D6B")
+    style_metric_cards(border_left_color="#21610B")
 
     ############## Side bar start ##############
 

@@ -430,38 +430,40 @@ def display_dashboard(name):
     col1, col2 = st.columns([0.7, 1.3])
 
     ## 4-1. 지난 주 비활성 유저  리스트
-    grid_options = {
-        "columnDefs": [
-            {
-                "headerName": "id",
-                "field": "userid",
-                "width": 150
-            },
-            {
-                "headerName": "이름",
-                "field": "name", 
-                "width": 100
-            },
-            {
-                "headerName": "체널",
-                "field": "department_slack", 
-                "width": 270
-            },
-        ],
-}
+#     grid_options = {
+#         "columnDefs": [
+#             {
+#                 "headerName": "id",
+#                 "field": "userid",
+#                 "width": 150
+#             },
+#             {
+#                 "headerName": "이름",
+#                 "field": "name", 
+#                 "width": 100
+#             },
+#             {
+#                 "headerName": "체널",
+#                 "field": "department_slack", 
+#                 "width": 270
+#             },
+#         ],
+# }
     
-    with col1:
-        st.markdown("##### 지난 주 이탈 유저 리스트")
-        AgGrid(churned_df, 
-            gridOptions = grid_options,
-            height = 350,
-            theme = 'alpine',
-            custom_css = { 
-                "#gridToolBar": {
-                    "padding-bottom": "0px !important"
-                    } 
-                }
-            )
+#     with col1:
+#         st.markdown("##### 지난 주 이탈 유저 리스트")
+#         AgGrid(churned_df, 
+#             gridOptions = grid_options,
+#             height = 350,
+#             theme = 'alpine',
+#             custom_css = { 
+#                 "#gridToolBar": {
+#                     "padding-bottom": "0px !important"
+#                     } 
+#                 }
+#             )
+        
+    col1.dataframe(churned_df, width = 600)
 
     ## 4-2. 리텐션 테이블
     weeks = active_users_list_df['active_week'].unique().tolist()
